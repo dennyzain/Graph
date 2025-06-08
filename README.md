@@ -147,3 +147,124 @@ dfsRecursive(0, 6, visited, path)
 1. **Order Dependency**: DFS path depends on the order neighbors are stored in adjacency list
 2. **Not Optimal**: First path found may not be the shortest
 3. **Backtracking**: The algorithm naturally backtracks when it hits dead ends
+
+I'll explain the BFS (Breadth-First Search) part of your code in detail. Let me break it down section by section:
+
+## **BFS Class Structure**
+
+```java
+class BFSGraph extends GraphBase {
+    public BFSGraph(int numNodes) {
+        super(numNodes);
+    }
+```
+
+The BFS class extends the base graph class, inheriting the adjacency list structure and basic graph operations.
+
+## **Main BFS Search Method**
+
+The `search()` method is where the BFS algorithm is implemented:
+
+### **1. Initialization Phase**
+```java
+boolean[] visited = new boolean[numNodes];
+Queue<Integer> queue = new LinkedList<>();
+Map<Integer, Integer> parent = new HashMap<>();
+
+queue.offer(0);      // Start from node 0
+visited[0] = true;   // Mark starting node as visited
+parent.put(0, -1);   // Root has no parent
+```
+
+**Key data structures:**
+- `visited[]`: Tracks which nodes have been visited
+- `queue`: FIFO structure that controls the order of exploration
+- `parent`: Maps each node to its parent (used for path reconstruction)
+
+### **2. BFS Core Algorithm**
+```java
+while (!queue.isEmpty() && !found) {
+    int current = queue.poll();  // Remove front node from queue
+    
+    if (current == target) {
+        found = true;
+        // Reconstruct and display path
+        break;
+    }
+    
+    // Explore all unvisited neighbors
+    for (int neighbor : adjacencyList.get(current)) {
+        if (!visited[neighbor]) {
+            visited[neighbor] = true;
+            parent.put(neighbor, current);
+            queue.offer(neighbor);  // Add to back of queue
+        }
+    }
+}
+```
+
+**How it works:**
+1. **Dequeue**: Remove the front node from queue
+2. **Check**: Is this our target? If yes, we're done!
+3. **Explore**: For each unvisited neighbor:
+   - Mark it as visited
+   - Set its parent (for path tracking)
+   - Add it to the back of the queue
+
+### **3. Path Reconstruction**
+```java
+private List<Integer> reconstructPath(Map<Integer, Integer> parent, int target) {
+    List<Integer> path = new ArrayList<>();
+    int node = target;
+    while (node != -1) {
+        path.add(0, node);        // Add to front of list
+        node = parent.get(node);  // Move to parent
+    }
+    return path;
+}
+```
+
+This traces back from the target to the root using the parent map, building the complete path.
+
+## **Why BFS Works This Way**
+
+**Level-by-Level Exploration:**
+- BFS explores all nodes at distance 1, then distance 2, then distance 3, etc.
+- This is why it guarantees the shortest path in unweighted graphs
+
+**Queue Behavior:**
+- FIFO (First In, First Out) ensures we process nodes in the order they were discovered
+- This maintains the level-by-level exploration pattern
+
+## **Example Walkthrough**
+
+For your graph structure:
+```
+       0
+      / \
+     1   2
+    /   / \
+   3   4   5
+      /
+     6
+```
+
+If searching for node 6:
+1. **Level 0**: Start with [0]
+2. **Level 1**: Process 0, add its children → Queue: [1, 2]
+3. **Level 2**: Process 1 (add 3), then 2 (add 4, 5) → Queue: [3, 4, 5]
+4. **Level 3**: Process 3 (no children), then 4 (add 6) → Queue: [5, 6]
+5. **Found**: Process 5, then find 6!
+
+The path would be: 0 → 2 → 4 → 6 (shortest path with 3 edges)
+
+## **Key Advantages of BFS**
+
+1. **Shortest Path**: Always finds the path with minimum number of edges
+2. **Complete**: Will find the target if it exists
+3. **Optimal**: For unweighted graphs, the first path found is optimal
+
+## **Time & Space Complexity**
+
+- **Time**: O(V + E) where V = vertices, E = edges
+- **Space**: O(V) for the queue and visited array
